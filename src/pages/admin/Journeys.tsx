@@ -1,8 +1,12 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { listJourneys, republish, type JourneyData } from '../../api/imperium';
-import { Card } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
+
+const STATUS_STYLE: Record<string, { background: string; color: string }> = {
+  completed: { background: 'rgba(61,220,132,0.1)',  color: '#3ddc84' },
+  failed:    { background: 'rgba(220,61,61,0.1)',   color: '#dc3d3d' },
+};
 
 export function Journeys() {
   const { token } = useAuth();
@@ -30,38 +34,50 @@ export function Journeys() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
-      <div className="max-w-3xl mx-auto">
+    <div className="p-8">
+      <div className="max-w-3xl">
         <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold text-gray-900">Jornadas</h1>
+          <h1 className="text-xl font-semibold text-white">Jornadas</h1>
           <Button variant="secondary" loading={republishing} onClick={handleRepublish}>
             Reativar travadas
           </Button>
         </div>
+
         {republishResult !== null && (
-          <p className="text-sm text-green-600 mb-4">{republishResult} jornada(s) reativada(s).</p>
+          <p className="text-xs mb-4" style={{ color: '#3ddc84' }}>
+            {republishResult} jornada(s) reativada(s).
+          </p>
         )}
-        {error && <p className="text-red-500 mb-4">{error}</p>}
-        <div className="flex flex-col gap-3">
-          {journeys.map(j => (
-            <Card key={j.id}>
-              <div className="flex justify-between items-center">
+
+        {error && <p className="text-sm mb-4" style={{ color: '#f87171' }}>{error}</p>}
+
+        <div className="flex flex-col gap-2">
+          {journeys.map(j => {
+            const badgeStyle = STATUS_STYLE[j.status] ?? { background: 'rgba(170,59,255,0.1)', color: '#aa3bff' };
+            return (
+              <div
+                key={j.id}
+                className="flex justify-between items-center px-4 py-3 rounded-lg"
+                style={{ background: '#111', border: '1px solid #1e1e1e' }}
+              >
                 <div>
-                  <p className="text-sm font-medium text-gray-900">{j.currentStep}</p>
-                  <p className="text-xs text-gray-500">Student: {j.studentId}</p>
+                  <p className="text-sm font-medium text-white">{j.currentStep}</p>
+                  <p className="text-xs mt-0.5" style={{ color: '#555' }}>Student: {j.studentId}</p>
                 </div>
-                <span className={`text-xs font-medium px-2 py-1 rounded-full ${
-                  j.status === 'completed' ? 'bg-green-100 text-green-700' :
-                  j.status === 'failed' ? 'bg-red-100 text-red-700' :
-                  'bg-indigo-100 text-indigo-700'
-                }`}>
+                <span
+                  className="text-xs font-medium px-2 py-0.5 rounded-full"
+                  style={badgeStyle}
+                >
                   {j.status}
                 </span>
               </div>
-            </Card>
-          ))}
+            );
+          })}
+
           {journeys.length === 0 && !error && (
-            <p className="text-gray-400 text-center py-8">Nenhuma jornada encontrada.</p>
+            <p className="text-sm py-12 text-center" style={{ color: '#444' }}>
+              Nenhuma jornada encontrada.
+            </p>
           )}
         </div>
       </div>

@@ -8,8 +8,13 @@ type Props = {
 
 export function Card({ title, children, className = '' }: Props) {
   return (
-    <div className={`bg-white border border-gray-200 rounded-xl p-6 shadow-sm ${className}`}>
-      {title && <h2 className="text-lg font-semibold text-gray-900 mb-4">{title}</h2>}
+    <div
+      className={`rounded-xl p-6 ${className}`}
+      style={{ background: '#111', border: '1px solid #1e1e1e' }}
+    >
+      {title && (
+        <h2 className="text-sm font-semibold mb-4" style={{ color: '#e2e2e2' }}>{title}</h2>
+      )}
       {children}
     </div>
   );

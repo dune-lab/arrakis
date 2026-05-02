@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { listStudents, type StudentData } from '../../api/imperium';
-import { Card } from '../../components/ui/Card';
 
 export function Students() {
   const { token } = useAuth();
@@ -14,24 +13,33 @@ export function Students() {
   }, [token]);
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
-      <div className="max-w-3xl mx-auto">
-        <h1 className="text-2xl font-bold text-gray-900 mb-6">Alunos</h1>
-        {error && <p className="text-red-500 mb-4">{error}</p>}
-        <div className="flex flex-col gap-3">
+    <div className="p-8">
+      <div className="max-w-3xl">
+        <h1 className="text-xl font-semibold text-white mb-6">Alunos</h1>
+
+        {error && <p className="text-sm mb-4" style={{ color: '#f87171' }}>{error}</p>}
+
+        <div className="flex flex-col gap-2">
           {students.map(s => (
-            <Card key={s.id}>
-              <div className="flex justify-between items-center">
-                <div>
-                  <p className="font-medium text-gray-900">{s.name}</p>
-                  <p className="text-sm text-gray-500">{s.email}</p>
-                </div>
-                <span className="text-xs text-gray-400">{new Date(s.createdAt).toLocaleDateString('pt-BR')}</span>
+            <div
+              key={s.id}
+              className="flex justify-between items-center px-4 py-3 rounded-lg"
+              style={{ background: '#111', border: '1px solid #1e1e1e' }}
+            >
+              <div>
+                <p className="text-sm font-medium text-white">{s.name}</p>
+                <p className="text-xs mt-0.5" style={{ color: '#555' }}>{s.email}</p>
               </div>
-            </Card>
+              <span className="text-xs" style={{ color: '#444' }}>
+                {new Date(s.createdAt).toLocaleDateString('pt-BR')}
+              </span>
+            </div>
           ))}
+
           {students.length === 0 && !error && (
-            <p className="text-gray-400 text-center py-8">Nenhum aluno cadastrado.</p>
+            <p className="text-sm py-12 text-center" style={{ color: '#444' }}>
+              Nenhum aluno cadastrado.
+            </p>
           )}
         </div>
       </div>

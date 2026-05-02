@@ -17,13 +17,22 @@ type StudentData = {
   createdAt: string;
 };
 
+type JourneyEvent = {
+  id: string;
+  name: string;
+  createdAt: string;
+};
+
 type JourneyData = {
   id: string;
   studentId: string;
   currentStep: string;
   status: string;
   createdAt: string;
+  events: JourneyEvent[];
 };
+
+export type { JourneyEvent };
 
 export type Me = {
   user: UserData;
@@ -94,5 +103,6 @@ export function republish(token: string) {
   return request<{ republished: number }>('/journeys/republish', {
     method: 'POST',
     headers: authHeaders(token),
+    body: '{}',
   });
 }
