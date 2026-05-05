@@ -24,10 +24,18 @@ const JOURNEY_ICON = (
   </svg>
 );
 
+const DLQ_ICON = (
+  <svg width="15" height="15" viewBox="0 0 15 15" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+    <rect x="1" y="1" width="13" height="13" rx="2" />
+    <path d="M5 5l5 5M10 5l-5 5" />
+  </svg>
+);
+
 const NAV_ITEMS = [
   { to: '/dashboard',       label: 'Dashboard', icon: GRID_ICON,    adminOnly: false },
   { to: '/admin/students',  label: 'Alunos',    icon: PERSON_ICON,  adminOnly: true  },
   { to: '/admin/journeys',  label: 'Jornadas',  icon: JOURNEY_ICON, adminOnly: true  },
+  { to: '/admin/dlq',      label: 'DLQ',       icon: DLQ_ICON,    adminOnly: true  },
 ];
 
 export function AppLayout() {
