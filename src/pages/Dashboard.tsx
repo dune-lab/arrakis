@@ -5,6 +5,7 @@ import { getMe, listJourneys, startJourney, republish, type Me, type JourneyData
 import { JourneyProgress } from '../components/JourneyProgress';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
+import { useJourneyStream } from '../hooks/useJourneyStream';
 
 const EVENT_LABELS: Record<string, string> = {
   JOURNEY_INITIATED:           'Jornada iniciada',
@@ -55,9 +56,22 @@ function JourneyTimeline({ events }: { events: JourneyData['events'] }) {
   );
 }
 
-function JourneyCard({ journey }: { journey: JourneyData }) {
+function JourneyCard({ journey, token, onUpdate }: {
+  journey: JourneyData;
+  token: string;
+  onUpdate: (id: string, update: { currentStep: string; status: string }) => void;
+}) {
   const [open, setOpen] = useState(false);
   const statusStyle = STATUS_STYLE[journey.status] ?? { background: 'rgba(170,59,255,0.1)', color: '#aa3bff' };
+
+  useJourneyStream(
+    journey.id,
+    token,
+    useCallback(
+      (update) => onUpdate(update.id, { currentStep: update.currentStep, status: update.status }),
+      [onUpdate],
+    ),
+  );
 
   return (
     <div className="rounded-xl p-5" style={{ background: '#111', border: '1px solid #1e1e1e' }}>
@@ -99,6 +113,15 @@ export function Dashboard() {
   const [starting, setStarting] = useState(false);
   const [republishing, setRepublishing] = useState(false);
   const [republishMsg, setRepublishMsg] = useState('');
+
+  const handleJourneyUpdate = useCallback(
+    (id: string, update: { currentStep: string; status: string }) => {
+      setJourneys((prev) =>
+        prev.map((j) => (j.id === id ? { ...j, ...update } : j)),
+      );
+    },
+    [],
+  );
 
   const load = useCallback(async () => {
     if (!token) return;
@@ -208,7 +231,7 @@ export function Dashboard() {
               Jornadas ({myJourneys.length})
             </p>
             {myJourneys.map(j => (
-              <JourneyCard key={j.id} journey={j} />
+              <JourneyCard key={j.id} journey={j} token={token!} onUpdate={handleJourneyUpdate} />
             ))}
           </div>
         )}
