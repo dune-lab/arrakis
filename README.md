@@ -1,73 +1,140 @@
-# React + TypeScript + Vite
+# arrakis
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Frontend SPA for the dune-lab adaptive learning platform. The interface through which students experience their learning journey and administrators manage the system.
 
-Currently, two official plugins are available:
+Named after the desert planet Arrakis — the surface through which everything flows.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+---
 
-## React Compiler
+## Responsibilities
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- Student onboarding: account creation, enrollment, journey start
+- Real-time journey progress display via SSE
+- Admin panel: users, students, journeys, DLQ management
+- All API calls proxied through `imperium` (no direct service communication)
 
-## Expanding the ESLint configuration
+---
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+## Stack
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+| Layer | Technology |
+|-------|-----------|
+| Framework | React 19 + TypeScript |
+| Routing | React Router DOM 7 |
+| Styling | Tailwind CSS 4 |
+| Build | Vite 8 |
+| Runtime (production) | nginx (static file serving) |
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+---
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+## Pages & Routes
+
+| Route | Auth | Description |
+|-------|------|-------------|
+| `/login` | public | Sign in |
+| `/register` | public | Create account |
+| `/dashboard` | student/admin | Journey progress overview |
+| `/admin/students` | admin | List and manage all students |
+| `/admin/journeys` | admin | List and manage all journeys |
+| `/admin/dlq` | admin | Harkonnen DLQ — inspect, edit and reprocess failed Kafka messages |
+
+Navigation is role-aware: admin-only routes are hidden from student accounts.
+
+---
+
+## Architecture
+
+```
+src/
+├── api/
+│   └── imperium.ts       ← all HTTP calls to the BFF
+├── context/
+│   └── AuthContext.tsx   ← JWT storage + role extraction
+├── components/
+│   ├── AppLayout.tsx     ← sidebar navigation + outlet
+│   └── ui/               ← Button, inputs, shared components
+├── pages/
+│   ├── Login.tsx
+│   ├── Register.tsx
+│   ├── Dashboard.tsx     ← journey progress + SSE hook
+│   └── admin/
+│       ├── Students.tsx
+│       ├── Journeys.tsx
+│       └── Dlq.tsx       ← DLQ management UI
+└── router.tsx            ← route definitions + protected route wrapper
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+### API Client (`src/api/imperium.ts`)
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+Thin, typed wrapper over `fetch`. Every function maps directly to one imperium endpoint:
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```ts
+login(email, password)               → POST /auth/login
+register(name, email, pw, role)      → POST /users/register
+getMe(token)                         → GET  /me
+listStudents(token)                  → GET  /students
+startJourney(studentId, token)       → POST /journeys
+listDlq(token)                       → GET  /harkonnen
+reprocessDlqOne(id, payload, token)  → POST /harkonnen/reprocess
+reprocessDlqAllByTopic(topic, token) → POST /harkonnen/reprocess-all
+dismissDlq(id, token)                → POST /harkonnen/dismiss
 ```
+
+The base URL is injected at build time via `VITE_IMPERIUM_URL`.
+
+---
+
+## DLQ Admin UI
+
+The `/admin/dlq` page provides full Harkonnen DLQ management:
+
+- **Filter tabs**: All / Pending / Reprocessed / Dismissed
+- **Expandable cards**: click any message to view its full payload and error
+- **Editable payload**: pending and reprocessed messages have an editable textarea — edit before reprocessing to fix malformed data
+- **Per-message actions**: Reprocess / Reprocess novamente / Dismiss
+- **Bulk action**: "Reprocessar tudo: {topic}" button appears when there are pending messages on a topic
+
+---
+
+## Environment Variables
+
+| Variable | Description |
+|----------|-------------|
+| `VITE_IMPERIUM_URL` | Base URL for the BFF (default: `http://localhost:3004`) |
+
+Set at **build time** via Vite — the value is baked into the static bundle.
+
+---
+
+## Running Locally
+
+```bash
+npm install
+npm run dev
+```
+
+Default port: **5173**
+
+In production (Docker), the built bundle is served by nginx on port **80**.
+
+---
+
+## Scripts
+
+```bash
+npm run dev      # Vite dev server with HMR
+npm run build    # TypeScript check + production bundle
+npm run preview  # serve production build locally
+npm run lint     # ESLint check
+```
+
+---
+
+## Docker
+
+The image uses a two-stage build:
+
+1. **Builder** (`node:24-alpine`): `tsc` + `vite build`
+2. **Production** (`nginx:alpine`): serves `dist/` as static files
+
+`VITE_IMPERIUM_URL` is passed as a Docker build arg and baked into the bundle at build time.
