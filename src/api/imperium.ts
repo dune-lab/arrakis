@@ -106,3 +106,43 @@ export function republish(token: string) {
     body: '{}',
   });
 }
+
+export type DlqMessage = {
+  id: string;
+  originalTopic: string;
+  name: string;
+  payload: string;
+  error: string;
+  failedAt: string;
+  status: string;
+  reprocessedAt: string | null;
+  createdAt: string;
+};
+
+export function listDlq(token: string) {
+  return request<DlqMessage[]>('/harkonnen', { headers: authHeaders(token) });
+}
+
+export function reprocessDlqOne(id: string, payload: string, token: string) {
+  return request<{ reprocessed: boolean }>('/harkonnen/reprocess', {
+    method: 'POST',
+    headers: authHeaders(token),
+    body: JSON.stringify({ id, payload }),
+  });
+}
+
+export function reprocessDlqAllByTopic(topic: string, token: string) {
+  return request<{ reprocessed: number }>('/harkonnen/reprocess-all', {
+    method: 'POST',
+    headers: authHeaders(token),
+    body: JSON.stringify({ topic }),
+  });
+}
+
+export function dismissDlq(id: string, token: string) {
+  return request<{ dismissed: boolean }>('/harkonnen/dismiss', {
+    method: 'POST',
+    headers: authHeaders(token),
+    body: JSON.stringify({ id }),
+  });
+}
