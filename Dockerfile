@@ -1,5 +1,8 @@
 FROM node:24-alpine AS builder
 
+ARG VITE_IMPERIUM_URL=http://localhost:3004
+ENV VITE_IMPERIUM_URL=$VITE_IMPERIUM_URL
+
 WORKDIR /app
 
 COPY arrakis/package.json arrakis/package-lock.json ./
