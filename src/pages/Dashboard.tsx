@@ -186,7 +186,7 @@ export function Dashboard() {
             <p className="text-sm mb-4" style={{ color: '#999' }}>
               Complete seu perfil de aluno para começar a jornada.
             </p>
-            <Link to="/onboarding/student">
+            <Link to="/onboarding">
               <Button>Criar perfil de aluno</Button>
             </Link>
           </Card>

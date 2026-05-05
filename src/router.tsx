@@ -4,8 +4,7 @@ import { AppLayout } from './components/AppLayout';
 import { Login } from './pages/Login';
 import { Register } from './pages/Register';
 import { Dashboard } from './pages/Dashboard';
-import { CreateStudent } from './pages/onboarding/CreateStudent';
-import { StartJourney } from './pages/onboarding/StartJourney';
+import { Onboarding } from './pages/onboarding/index';
 import { Students } from './pages/admin/Students';
 import { Journeys } from './pages/admin/Journeys';
 
@@ -16,8 +15,7 @@ export function Router() {
       <Route path="/register" element={<Register />} />
       <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
         <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/onboarding/student" element={<CreateStudent />} />
-        <Route path="/onboarding/journey" element={<StartJourney />} />
+        <Route path="/onboarding" element={<Onboarding />} />
         <Route path="/admin/students" element={<Students />} />
         <Route path="/admin/journeys" element={<Journeys />} />
       </Route>
